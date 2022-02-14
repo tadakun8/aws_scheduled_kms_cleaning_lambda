@@ -34,8 +34,8 @@ export class ScheduledKmsCleaningLambdaStack extends cdk.Stack {
       schedule: events.Schedule.cron({
         minute: "0",
         hour: "19",
-        day: "*",
-        month: "SUN",
+        weekDay: "SUN",
+        month: "*",
         year: "*",
       }),
       targets: [new eventsTarget.LambdaFunction(scheduleLambdaFunction)],
