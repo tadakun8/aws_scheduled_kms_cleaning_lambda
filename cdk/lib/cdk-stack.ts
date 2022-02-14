@@ -33,7 +33,7 @@ export class ScheduledKmsCleaningLambdaStack extends cdk.Stack {
       // Specify execution at 4 AM every Monday in JST
       schedule: events.Schedule.cron({
         minute: "0",
-        hour: "7",
+        hour: "19",
         day: "*",
         month: "SUN",
         year: "*",
