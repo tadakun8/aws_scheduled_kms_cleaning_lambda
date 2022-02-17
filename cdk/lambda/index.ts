@@ -30,7 +30,7 @@ const getAttachedAliasKeyIdList = async (kmsClient: AWS.KMS) => {
 };
 
 /**
- *　Function to determine if the key should be change status to "PendingDeletion".
+ *　Determine if the key should be change status to "PendingDeletion".
  *
  * @param keyMetadata key meta data
  * @param attachedAliaskeyIdList List of key id for keys with alias
@@ -60,22 +60,17 @@ const changeStatusToPendingDeletion = async (keyId: string) => {
   console.log("Complete: Change Status to Panding Delete");
 };
 
-export const handler: ScheduledHandler = async (
-  event: ScheduledEvent,
-  context: Context,
-) => {
-  handlerMethod();
-};
-
-const handlerMethod = async () => {
+/**
+ * Lambda main process
+ */
+const mainProcess = async () => {
   try {
     // Get a list of keys with alias.
     const attachedAliaskeyList = await getAttachedAliasKeyIdList(kmsClient);
 
-    // keyの一覧を取得
+    // Get a list of keys that exist in the account
     const listKeyResponse = await kmsClient.listKeys().promise();
 
-    // 削除保留中になっていないものかつエイリアスがついていないものを判別
     for (const key of listKeyResponse.Keys!) {
       const describeKeyResponse = await kmsClient
         .describeKey({
@@ -83,6 +78,7 @@ const handlerMethod = async () => {
         })
         .promise();
 
+      //　Change the status of a key that is not "PendingDeletion" and does not have an alias to "PendingDeletion"
       shouldChangeStatusToPendingDelete(
         describeKeyResponse.KeyMetadata!,
         attachedAliaskeyList,
@@ -92,4 +88,11 @@ const handlerMethod = async () => {
     // For debug
     console.log(err);
   }
+};
+
+export const handler: ScheduledHandler = async (
+  event: ScheduledEvent,
+  context: Context,
+) => {
+  mainProcess();
 };
