@@ -9,6 +9,27 @@ const kmsClient: AWS.KMS = new AWS.KMS({
 });
 
 /**
+ * Get a list of keys with aliases.
+ * @param kmsClient kms client
+ * @returns　List of keys with alias.
+ */
+const getAttachedAliasKeyIdList = async (kmsClient: AWS.KMS) => {
+  console.log("Execute: getAttachedAliasKeyIdList");
+  const listAliasesResponse = await kmsClient.listAliases().promise();
+
+  // If the alias is not tied to a specific key, the targetKeyId will be undefined.
+  // Therefore, only keys with aliases are included in the list.
+  const attachedAliasKeyIDList = listAliasesResponse
+    .Aliases!.map((aliasInfo) => aliasInfo.TargetKeyId)
+    .filter(
+      (item): item is Exclude<typeof item, undefined> => item !== undefined,
+    );
+
+  console.log("Complete: getAttachedAliasKeyIdList");
+  return attachedAliasKeyIDList;
+};
+
+/**
  *　Function to determine if the key should be change status to "PendingDeletion".
  *
  * @param keyMetadata key meta data
@@ -48,10 +69,8 @@ export const handler: ScheduledHandler = async (
 
 const handlerMethod = async () => {
   try {
-    const listAliasesResponse = await kmsClient.listAliases().promise();
-    const attachedAliaskeyList = listAliasesResponse.Aliases?.map(
-      (aliasInfo) => aliasInfo.TargetKeyId,
-    ).filter((value) => value !== undefined);
+    // Get a list of keys with alias.
+    const attachedAliaskeyList = await getAttachedAliasKeyIdList(kmsClient);
 
     // keyの一覧を取得
     const listKeyResponse = await kmsClient.listKeys().promise();
