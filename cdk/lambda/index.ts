@@ -8,6 +8,37 @@ const kmsClient: AWS.KMS = new AWS.KMS({
   region: "ap-northeast-1",
 });
 
+/**
+ *　Function to determine if the key should be change status to "PendingDeletion".
+ *
+ * @param keyMetadata key meta data
+ * @param attachedAliaskeyIdList List of key id for keys with alias
+ * @returns true if the key is not pending deletion and does not have an alias
+ */
+const shouldChangeStatusToPendingDelete = (
+  keyMetadata: AWS.KMS.KeyMetadata,
+  attachedAliasIdkeyList: (string | undefined)[] | undefined,
+) => {
+  const keyState = keyMetadata.KeyState;
+  const keyId = keyMetadata.KeyId;
+  return (
+    keyState !== "PendingDeletion" && !attachedAliasIdkeyList?.includes(keyId)
+  );
+};
+
+/**
+ * Change the status of a key to "PendingDeletion".
+ * @param keyId key id
+ */
+const changeStatusToPendingDeletion = async (keyId: string) => {
+  console.log("Execute: Change Status to Panding Delete: " + keyId);
+  await kmsClient.scheduleKeyDeletion({
+    KeyId: keyId,
+    PendingWindowInDays: 7,
+  });
+  console.log("Complete: Change Status to Panding Delete");
+};
+
 export const handler: ScheduledHandler = async (
   event: ScheduledEvent,
   context: Context,
@@ -32,17 +63,11 @@ const handlerMethod = async () => {
           KeyId: key.KeyId!,
         })
         .promise();
-      if (
-        describeKeyResponse.KeyMetadata?.KeyState !== "PendingDeletion" &&
-        !attachedAliaskeyList?.includes(key.KeyId)
-      ) {
-        console.log("this is: " + key.KeyId);
-        await kmsClient.scheduleKeyDeletion({
-          KeyId: key.KeyId!,
-          PendingWindowInDays: 7,
-        });
-        console.log("Delete !");
-      }
+
+      shouldChangeStatusToPendingDelete(
+        describeKeyResponse.KeyMetadata!,
+        attachedAliaskeyList,
+      ) && (await changeStatusToPendingDeletion(key.KeyId!));
     }
   } catch (err) {
     // For debug
