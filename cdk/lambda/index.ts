@@ -38,12 +38,12 @@ const getAttachedAliasKeyIdList = async (kmsClient: AWS.KMS) => {
  */
 const shouldChangeStatusToPendingDelete = (
   keyMetadata: AWS.KMS.KeyMetadata,
-  attachedAliasIdkeyList: (string | undefined)[] | undefined,
+  attachedAliasIdkeyList: string[],
 ) => {
   const keyState = keyMetadata.KeyState;
   const keyId = keyMetadata.KeyId;
   return (
-    keyState !== "PendingDeletion" && !attachedAliasIdkeyList?.includes(keyId)
+    keyState !== "PendingDeletion" && !attachedAliasIdkeyList.includes(keyId)
   );
 };
 
