@@ -4,6 +4,7 @@ import * as lambdaNodejs from "@aws-cdk/aws-lambda-nodejs";
 import * as logs from "@aws-cdk/aws-logs";
 import * as events from "@aws-cdk/aws-events";
 import * as eventsTarget from "@aws-cdk/aws-events-targets";
+import * as sns from "@aws-cdk/aws-sns";
 
 import { CONSTANTS } from "./constants";
 
@@ -80,5 +81,14 @@ export class ScheduledKmsCleaningLambdaStack extends cdk.Stack {
       }),
       targets: [new eventsTarget.LambdaFunction(scheduleLambdaFunction)],
     });
+
+    /**
+     * Define SNS topic to notify developer of the cleaned-up key
+     */
+    const topic = new sns.Topic(this, "scheduledKmsCleaningaTopic", {
+      displayName: "scheduled-kms-cleaning-topic",
+      topicName: "scheduled-kms-cleaning-topic",
+    });
+    topic.grantPublish(scheduleLambdaFunction);
   }
 }
