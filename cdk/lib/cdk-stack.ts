@@ -26,7 +26,7 @@ export class ScheduledKmsCleaningLambdaStack extends cdk.Stack {
               "kms:ListAliases",
               "kms:ScheduleKeyDeletion",
               "kms:ListKeys",
-              "kms:listAliases",
+              "kms:DescribeKey",
             ],
             resources: ["*"],
           }),
