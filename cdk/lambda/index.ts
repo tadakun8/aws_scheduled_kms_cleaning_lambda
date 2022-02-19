@@ -94,5 +94,7 @@ export const handler: ScheduledHandler = async (
   event: ScheduledEvent,
   context: Context,
 ) => {
-  mainProcess();
+  await mainProcess();
 };
+
+// mainProcess();
