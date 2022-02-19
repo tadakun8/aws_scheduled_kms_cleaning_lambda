@@ -86,7 +86,7 @@ const mainProcess = async () => {
     }
   } catch (err) {
     // For debug
-    console.log(err);
+    console.error(err);
   }
 };
 
