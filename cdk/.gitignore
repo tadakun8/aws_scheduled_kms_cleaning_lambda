@@ -6,3 +6,8 @@ node_modules
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+# When I run npm run cdk diff(deploy) and get the value of the parameter store, 
+# the email address of the notification recipient is written in cdk.context.json as the value of the context.
+# Therefore, don't commit until the time comes to use cdk.context.json
+cdk.context.json
