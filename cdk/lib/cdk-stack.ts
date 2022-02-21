@@ -112,5 +112,6 @@ export class ScheduledKmsCleaningLambdaStack extends cdk.Stack {
         new snsSubscriptions.EmailSubscription(emailAddress),
       );
     });
+    scheduleLambdaFunction.addEnvironment("TOPIC_ARN", topic.topicArn);
   }
 }
