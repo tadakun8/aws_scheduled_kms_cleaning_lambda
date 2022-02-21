@@ -5,6 +5,8 @@ import * as logs from "@aws-cdk/aws-logs";
 import * as events from "@aws-cdk/aws-events";
 import * as eventsTarget from "@aws-cdk/aws-events-targets";
 import * as sns from "@aws-cdk/aws-sns";
+import * as snsSubscriptions from "@aws-cdk/aws-sns-subscriptions";
+import * as ssm from "@aws-cdk/aws-ssm";
 
 import { CONSTANTS } from "./constants";
 
@@ -90,5 +92,25 @@ export class ScheduledKmsCleaningLambdaStack extends cdk.Stack {
       topicName: "scheduled-kms-cleaning-topic",
     });
     topic.grantPublish(scheduleLambdaFunction);
+
+    /**
+     * Process for adding subscription
+     */
+    // Get the email address string for notification from the SSM parameter store
+    const emailAddressesString = ssm.StringParameter.valueFromLookup(
+      this,
+      CONSTANTS.parameterNameOfNotification,
+    );
+    console.log(emailAddressesString);
+    // When multiple email addresses are registered in the parameter store, they are separated by commas.
+    // e.g) emailAddressString = "xxx@gmail.com,yyy@gmail.com"
+    // So, fix it to an array
+    const emailAddressList = emailAddressesString.split(",");
+    // Add one email address at a time as a subscription.
+    emailAddressList.forEach((emailAddress) => {
+      topic.addSubscription(
+        new snsSubscriptions.EmailSubscription(emailAddress),
+      );
+    });
   }
 }
